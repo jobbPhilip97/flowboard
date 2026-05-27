@@ -1,10 +1,8 @@
-import { Component, inject, effect } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
 import { ApiService } from './services/api.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -12,13 +10,15 @@ export class App {
 
   private api = inject(ApiService);
 
-  protected readonly title = 'flowboard-ui';
-
   constructor() {
-    this.api.loadHealth();
+    this.api.loadProjects();
   }
 
-  get health() {
-    return this.api.health;
+  get projects() {
+    return this.api.projects;
+  }
+
+  addProject() {
+    this.api.createProject('New Project');
   }
 }

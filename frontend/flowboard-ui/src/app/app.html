@@ -1,5 +1,9 @@
-<h1>{{ title }}</h1>
+<h1>FlowBoard</h1>
 
-<p>{{ health() + ' koko' }}</p>
+<button (click)="addProject()">Add project</button>
 
-<router-outlet />
+<ul>
+  @for (p of projects(); track p.id) {
+    <li>{{ p.name }}</li>
+  }
+</ul>
