@@ -1,0 +1,120 @@
+<div class="import-modal">
+  <div class="import-scroll-body">
+  <div class="import-header">
+    <div class="import-title-row">
+      <h2>Import from Markdown</h2>
+      <button class="guide-toggle" (click)="showGuide.set(!showGuide())" [class.active]="showGuide()" title="How to structure your file">
+        ℹ️ How it works
+      </button>
+    </div>
+    <p class="import-subtitle">
+      Drop a <code>.md</code> file — phases become groups, list items become tasks in Backlog.
+    </p>
+  </div>
+
+  <!-- Format guide -->
+  @if (showGuide()) {
+    <div class="guide-panel">
+      <h3 class="guide-heading">Expected file structure</h3>
+      <p class="guide-text">Use <code>##</code> or <code>###</code> headings for phases, followed by a numbered or bullet list for tasks:</p>
+      <pre class="guide-code">## Fas 1 – Backend
+1. Skapa Task-entitet
+2. Lägg till service-lager
+3. Validering med Bean Validation
+
+## Fas 2 – Frontend
+1. Lazy-loaded routes
+2. Kanban-bräde med drag & drop
+- Three.js hero-scen
+
+### Fas 3 – Polish
+- Mörkt tema
+- Responsiv layout</pre>
+      <ul class="guide-tips">
+        <li>✅ Rubriker med <code>##</code> eller <code>###</code> skapar fasgrupper</li>
+        <li>✅ Både numrerade listor (<code>1.</code>) och punktlistor (<code>-</code> / <code>*</code>) fungerar</li>
+        <li>✅ Välj vilka tasks du vill importera innan du klickar Import</li>
+        <li>⚠️ Tabeller, kodblock och rubriker med <code>#</code> (en hash) ignoreras</li>
+        <li>⚠️ Tasks utan fas-rubrik ovanför sig importeras inte</li>
+      </ul>
+    </div>
+  }
+
+  <!-- Drop zone (shown before file is loaded) -->
+  @if (!hasPhases()) {
+    <div
+      class="drop-zone"
+      [class.dragging]="isDragging()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()"
+    >
+      <div class="drop-icon">📄</div>
+      <p>Drag & drop your <strong>.md</strong> file here</p>
+      <p class="drop-hint">or click to browse</p>
+      <input #fileInput type="file" accept=".md,.txt" hidden (change)="onFileSelected($event)" />
+    </div>
+  }
+
+  <!-- Error -->
+  @if (error()) {
+    <div class="import-error">{{ error() }}</div>
+  }
+
+  <!-- Preview -->
+  @if (hasPhases()) {
+    <div class="preview-header">
+      <span class="preview-file">📄 {{ fileName() }}</span>
+      <span class="preview-count">{{ totalSelected() }} task(s) selected</span>
+    </div>
+
+    <div class="phases-list">
+      @for (phase of phases(); track phase.name) {
+        <div class="phase-group">
+          <label class="phase-heading" (click)="togglePhase(phase)">
+            <input
+              type="checkbox"
+              [checked]="isPhaseAllSelected(phase)"
+              [indeterminate]="isPhasePartiallySelected(phase)"
+              (click)="$event.stopPropagation(); togglePhase(phase)"
+            />
+            <span>{{ phase.name }}</span>
+            <span class="phase-badge">{{ phase.tasks.length }}</span>
+          </label>
+
+          <ul class="task-items">
+            @for (task of phase.tasks; track task.title) {
+              <li class="task-item" [class.deselected]="!task.selected">
+                <label>
+                  <input type="checkbox" [checked]="task.selected" (change)="toggleTask(phase, task)" />
+                  <span>{{ task.title }}</span>
+                </label>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  }
+
+  </div><!-- end import-scroll-body -->
+
+  <!-- Actions (sticky footer) -->
+  <div class="import-actions">
+    <button class="btn btn-ghost" (click)="cancelled.emit()" [disabled]="importing()">Cancel</button>
+    @if (hasPhases()) {
+      <button
+        class="btn btn-primary"
+        (click)="importTasks()"
+        [disabled]="importing() || totalSelected() === 0"
+      >
+        @if (importing()) {
+          Importing…
+        } @else {
+          Import {{ totalSelected() }} task(s) to Backlog
+        }
+      </button>
+    }
+  </div>
+</div>

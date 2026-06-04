@@ -1,24 +1,12 @@
-import { Component, inject } from '@angular/core';
-import { ApiService } from './services/api.service';
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { LoadingService } from './core/services/loading.service';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  standalone: true,
+  imports: [RouterOutlet],
+  template: `<router-outlet />`
 })
-export class App {
-
-  private api = inject(ApiService);
-
-  constructor() {
-    this.api.loadProjects();
-  }
-
-  get projects() {
-    return this.api.projects;
-  }
-
-  addProject() {
-    this.api.createProject('New Project');
-  }
-}
+export class App {}

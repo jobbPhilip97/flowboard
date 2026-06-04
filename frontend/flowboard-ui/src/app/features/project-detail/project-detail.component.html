@@ -1,0 +1,105 @@
+<header class="board-header">
+  <a class="back-link" routerLink="/">← Projects</a>
+  <div class="board-header-row">
+    <div>
+      <h2>{{ project()?.name ?? 'Loading…' }}</h2>
+      @if (project()?.description) {
+        <p class="board-desc">{{ project()!.description }}</p>
+      }
+    </div>
+    <button class="btn btn-ghost import-btn" (click)="showImport.set(true)" title="Import tasks from a Markdown file">
+      📥 Import from Markdown
+    </button>
+  </div>
+</header>
+
+<div class="board">
+  @for (col of columns; track col.id) {
+    <div class="column">
+      <div class="column-header">
+        <span class="column-title">{{ col.label }}</span>
+        <span class="column-count">{{ tasks() | taskCount: col.id }}</span>
+      </div>
+
+      <div
+        class="task-list"
+        cdkDropList
+        [id]="col.id"
+        [cdkDropListData]="tasksForColumn(col.id)"
+        [cdkDropListConnectedTo]="connectedLists"
+        (cdkDropListDropped)="drop($event, col.id)"
+      >
+        @for (task of tasksForColumn(col.id); track task.id) {
+          <div class="task-card" cdkDrag>
+            <div class="task-card-header">
+              <span [class]="'badge ' + priorityClass(task.priority)">{{ task.priority }}</span>
+              <button class="btn-icon" (click)="deleteTask(task)" title="Delete task">✕</button>
+            </div>
+            <p class="task-title">{{ task.title }}</p>
+            @if (task.description) {
+              <p class="task-desc">{{ task.description }}</p>
+            }
+            @if (task.dueDate) {
+              <span class="task-due">Due {{ task.dueDate | date:'mediumDate' }}</span>
+            }
+          </div>
+        } @empty {
+          <div class="column-empty">Drop tasks here</div>
+        }
+      </div>
+
+      <button class="add-task-btn" (click)="openForm(col.id)">+ Add task</button>
+    </div>
+  }
+</div>
+
+@if (showForm()) {
+  <div class="modal-overlay" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>New Task — {{ activeColumn() | titlecase }}</h2>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field">
+          <label for="title">Title *</label>
+          <input id="title" formControlName="title" placeholder="What needs to be done?" autocomplete="off" />
+          @if (form.get('title')?.invalid && form.get('title')?.touched) {
+            <span class="error">Title is required</span>
+          }
+        </div>
+        <div class="field">
+          <label for="tdesc">Description</label>
+          <textarea id="tdesc" formControlName="description" rows="3"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="priority">Priority</label>
+            <select id="priority" formControlName="priority">
+              @for (p of priorities; track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="dueDate">Due date</label>
+            <input id="dueDate" type="date" formControlName="dueDate" />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Add Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (showImport()) {
+  <div class="modal-overlay" (click)="showImport.set(false)">
+    <div class="modal modal-wide" (click)="$event.stopPropagation()">
+      <app-markdown-import
+        [projectId]="projectId()"
+        (imported)="onImported()"
+        (cancelled)="showImport.set(false)"
+      />
+    </div>
+  </div>
+}

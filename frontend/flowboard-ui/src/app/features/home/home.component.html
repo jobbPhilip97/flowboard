@@ -1,0 +1,59 @@
+<app-hero-scene />
+
+<main class="home">
+  <header class="home-header">
+    <h1>FlowBoard</h1>
+    <p class="subtitle">Manage your projects with clarity</p>
+    <button class="btn btn-primary" (click)="openForm()">+ New Project</button>
+  </header>
+
+  @if (loadingService.isLoading()) {
+    <div class="loading-bar"></div>
+  }
+
+  @if (showForm()) {
+    <div class="modal-overlay" (click)="closeForm()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2>Create Project</h2>
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <div class="field">
+            <label for="name">Name *</label>
+            <input id="name" formControlName="name" placeholder="My awesome project" autocomplete="off" />
+            @if (form.get('name')?.invalid && form.get('name')?.touched) {
+              <span class="error">Name is required (max 100 chars)</span>
+            }
+          </div>
+          <div class="field">
+            <label for="desc">Description</label>
+            <textarea id="desc" formControlName="description" rows="3" placeholder="What is this project about?"></textarea>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" (click)="closeForm()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Create</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <section class="projects-grid">
+    @for (project of projects(); track project.id) {
+      <a class="project-card" [routerLink]="['/projects', project.id]">
+        <div class="project-card-body">
+          <h3>{{ project.name }}</h3>
+          @if (project.description) {
+            <p>{{ project.description }}</p>
+          }
+        </div>
+        <div class="project-card-footer">
+          <span class="date">{{ project.createdAt | date:'mediumDate' }}</span>
+          <button class="btn-icon btn-danger" (click)="deleteProject(project.id, $event)" title="Delete project">✕</button>
+        </div>
+      </a>
+    } @empty {
+      <div class="empty-state">
+        <p>No projects yet. Create your first one!</p>
+      </div>
+    }
+  </section>
+</main>
