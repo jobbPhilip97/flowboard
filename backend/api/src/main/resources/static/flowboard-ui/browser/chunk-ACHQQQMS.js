@@ -1,0 +1,1 @@
+import{A as a,N as i,Na as s}from"./chunk-PENJDAXG.js";var n=class t{activeRequests=i(0);isLoading=s(()=>this.activeRequests()>0);increment(){this.activeRequests.update(e=>e+1)}decrement(){this.activeRequests.update(e=>Math.max(0,e-1))}static \u0275fac=function(o){return new(o||t)};static \u0275prov=a({token:t,factory:t.\u0275fac,providedIn:"root"})};export{n as a};
